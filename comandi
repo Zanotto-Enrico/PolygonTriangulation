@@ -1,0 +1,17 @@
+
+../CGAL-5.5.2/scripts/cgal_create_CMakeLists
+
+cmake -D CGAL_DIR=/home/zan/cgal/CGAL-5.5.2/ -DCMAKE_BUILD_TYPE=Release -DBOOST_ROOT=/home/zan/cgal/boost_1_82_0/ 
+
+cmake -D CGAL_DIR=/home/zan/cgal/CGAL-5.5.2/ -DCMAKE_BUILD_TYPE=Release -DBOOST_ROOT=/home/zan/cgal/boost_1_82_0/ -DEIGEN3_INCLUDE_DIR=/home/zan/cgal/eigen-3.3.7/
+
+make
+
+
+
+
+
+find_package(Eigen3)   
+if (EIGEN3_FOUND)   
+  include( ${EIGEN3_USE_FILE} ) 
+endif()
