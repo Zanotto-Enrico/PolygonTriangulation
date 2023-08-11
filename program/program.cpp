@@ -55,7 +55,7 @@ std::vector<Triangle> getMesh()
             std::cout  <<"(" << v.x << ";" << v.y << ")  "; 
         }
         std::cout << "\n";
-        for(auto t : tessellateMonotonePolygon(p) )
+        for(auto t : triangulateMonotonePolygon(p) )
         {
             std::cout  <<"   Triangle: (" << t.p1.x << ";" << t.p1.y << ")  (" << t.p2.x << ";" << t.p2.y << ")  (" << t.p3.x << ";" << t.p3.y << ")\n"; 
         }
