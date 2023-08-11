@@ -14,6 +14,11 @@ class DrawingApp:
         self.current_line = None
         self.done = False;
 
+        window_width = 800
+        window_height = 600
+        self.root.geometry(f"{window_width}x{window_height}")
+        self.root.resizable(width=False, height=False)
+
     def on_canvas_click_sx(self, event):
         if(self.done):
             self.clear_canvas()
@@ -52,27 +57,37 @@ def sendPolygon(polygon, app):
 
     r.sendafter(": ",str(len(polygon)).encode() + b"\n")
 
+    print("Polygon: ", end="")
     a = 1
     for x,y in polygon:
+        y = app.canvas.winfo_reqheight() - y
         r.sendafter(str(a).encode() + b": "  ,b"(" + str(x).encode() + b";" +  str(y).encode() + b")\n")
+        print("("+str(x) + ";" + str(y)+")", end="")
         a = a + 1 
+    print()
     
     previous = None
     first = None
     try:
         while True:
-            for t in re.findall(r"\([0-9]+;[0-9]+\)",r.recvline().decode("ascii")):
-                coords = re.findall(r"[0-9]+",t)
+            print("drawing ")
+            #print(r.recvline())
+            for t in re.findall(r"\([0-9,-]+;[0-9,-]+\)",r.recvline().decode("ascii")):
+                coords = re.findall(r"[0-9,-]+",t)
                 if first == None:
-                    first = coords
+                    x,y = coords
+                    first = (x,app.canvas.winfo_reqheight()  - int(y))
                 if previous != None:
-                    app.draw_line(previous, (coords[0], coords[1]))
-                    print("drawing ")
-                    print(coords)
-                previous =  (coords[0], coords[1])
+                    app.draw_line(previous, (coords[0], app.canvas.winfo_reqheight() - int(coords[1])))
+                    print(coords, end="")
+                previous =  (coords[0],  app.canvas.winfo_reqheight() - int(coords[1]))
             app.draw_line(previous, first)
-    except :
-        print("end")
+            print(coords, end="")
+            previous = None
+            first = None
+            print()
+    except Exception as error:
+        print("Error :", error)
 
     r.close()
 
