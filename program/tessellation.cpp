@@ -156,51 +156,69 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
     return monotonePolygons;
 }
 
-bool isConvex(const Coord& prev, const Coord& current, const Coord& next) {
-    double crossProduct = (current.x - prev.x) * (next.y - current.y) - (current.y - prev.y) * (next.x - current.x);
-    return crossProduct > 0; // Check for counterclockwise direction
-}
 
-bool isEar(const Coord& prev, const Coord& current, const Coord& next, const std::vector<Coord>& polygon) {
-    if (!isConvex(prev, current, next)) return false;
-
-    for (const Coord& vertex : polygon) {
-        if (vertex != prev && vertex != current && vertex != next) {
-            double area1 = (next.x - current.x) * (vertex.y - current.y) - (next.y - current.y) * (vertex.x - current.x);
-            double area2 = (vertex.x - prev.x) * (next.y - prev.y) - (vertex.y - prev.y) * (next.x - prev.x);
-            double area3 = (current.x - vertex.x) * (prev.y - vertex.y) - (current.y - vertex.y) * (prev.x - vertex.x);
-            if (area1 >= 0 && area2 >= 0 && area3 >= 0) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-std::vector<Triangle> tessellateMonotonePolygon(const std::vector<Coord>& polygon) {
+std::vector<Triangle> triangulateMonotonePolygon(std::vector<Coord>& polygon) {
     std::vector<Triangle> triangles;
+    int poly_len = polygon.size();
 
-    if (polygon.size() < 3) return triangles; // Not a valid polygon
+    if(poly_len < 3 ) return  std::vector<Triangle>();
 
-    std::vector<Coord> currentPolygon = polygon;
+    for (size_t i = 0; i < polygon.size(); ++i)
+        polygon[i].index = i;
+    
+    //////
+    std::sort(polygon.begin(), polygon.end());
+    std::stack<Coord> stack;
+    stack.push(polygon[0]);
+    stack.push(polygon[1]);
+    //////
+/*
+    // obtaining the first vertex 
+    int first = 0;
+    for(int i = 1; i < poly_len; i++)
+        if(polygon[first].x > polygon[i].x)   first = i;
 
-    while (currentPolygon.size() > 3) {
-        size_t n = currentPolygon.size();
-        for (size_t i = 0; i < n; ++i) {
-            const Coord& prev = currentPolygon[(i + n - 1) % n];
-            const Coord& current = currentPolygon[i];
-            const Coord& next = currentPolygon[(i + 1) % n];
+    std::stack<Coord> stack;
+    stack.push(polygon[first]);
+    stack.push(polygon[(first+1)%poly_len]);
+*/
+    for (int i = 2; i < poly_len; ++i)
+    {
+        Coord current = polygon[i];
+        Coord prev = polygon[(current.index+poly_len-1)%poly_len];
+        Coord next = polygon[(current.index+1)%poly_len];
 
-            if (isEar(prev, current, next, currentPolygon)) {
-                triangles.push_back({ prev, current, next });
-                currentPolygon.erase(currentPolygon.begin() + i);
-                break;
+        Coord last = stack.top();
+        vertexType lastType = getVertexType(last, polygon[(last.index+1)%poly_len], polygon[(last.index+poly_len-1)%poly_len]);
+
+        vertexType type = getVertexType(current,next,prev);
+        if(type == lastType)
+        {
+            stack.push(current);
+            while (current.y > last.y)
+            {
+                Coord tmp = stack.top();
+                stack.pop();
+                stack.pop();
+                triangles.push_back({tmp,last,current});
+                stack.push(tmp);
+                i++; 
             }
         }
+        else
+        {
+            Coord tmp = stack.top();
+            stack.pop();
+            while(stack.size() >= 2)
+            {
+                triangles.push_back({tmp,current,stack.top()});
+                tmp = stack.top();
+                stack.pop();
+            }
+            triangles.push_back({tmp,current,stack.top()});
+            stack.push(current);
+        }   
     }
-
-    // Last triangle (final 3 vertices)
-    triangles.push_back({ currentPolygon[0], currentPolygon[1], currentPolygon[2] });
 
     return triangles;
 }

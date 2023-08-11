@@ -49,10 +49,23 @@ std::vector<Triangle> getMesh(std::vector<Coord> polygon)
 
     for (auto p : partitionPolygonIntoMonotone(polygon))
     {
+<<<<<<< HEAD
       for(auto t : tessellateMonotonePolygon(p) )
       {
         triangles.push_back(t);
       }
+=======
+        std::cout << "Monotone polygon: ";
+        for(auto v : p)
+        {
+            std::cout  <<"(" << v.x << ";" << v.y << ")  "; 
+        }
+        std::cout << "\n";
+        for(auto t : triangulateMonotonePolygon(p) )
+        {
+            std::cout  <<"   Triangle: (" << t.p1.x << ";" << t.p1.y << ")  (" << t.p2.x << ";" << t.p2.y << ")  (" << t.p3.x << ";" << t.p3.y << ")\n"; 
+        }
+>>>>>>> master
     }
 
     return triangles;
