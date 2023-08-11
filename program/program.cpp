@@ -98,12 +98,6 @@ int main(int argc, char* argv[])
 
   getUserInput(polygon);
 
-    for (Coord v : polygon)
-  {
-    std::cout << "[(" <<  v.x << ";" << v.y  <<std::endl;
-  }
-
-
   std::vector<Triangle> triangles = getMesh(polygon);
 
   //for(int i = 0; i < 1000000; i++)
