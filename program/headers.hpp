@@ -6,6 +6,7 @@
 #include <set>
 #include <list>
 #include <map>
+#include <stack>
 
 struct Coord
 {
@@ -22,6 +23,11 @@ struct Coord
     bool operator==(const Coord& other) const 
     {
         return x == other.x &&  y == other.y && z == other.z;
+    }
+
+    bool operator!=(const Coord& other) const 
+    {
+        return !(*this == other);
     }
 
 };
@@ -42,7 +48,9 @@ class Edge
 public:
     Coord start;
     Coord end;
+    
     Coord* helper; // sweep line helper vertex
+    int* monotonePolygonIndex; // index of the relative monotone polygon  
 
     Edge(const Coord& vertex1, const Coord& vertex2) {
         if (vertex1.x < vertex2.x) {
@@ -57,6 +65,10 @@ public:
     Edge(const Coord& vertex1, const Coord& vertex2, const Coord& help) : Edge(vertex1,vertex2) 
     {    
         helper = new Coord(help);
+    }
+    Edge(const Coord& vertex1, const Coord& vertex2, const Coord& help, int index) : Edge(vertex1,vertex2,help) 
+    {    
+        monotonePolygonIndex = new int(index);
     }
 
     // Comparison operator for sorting edge events based on y-coordinate.
@@ -95,14 +107,16 @@ struct LessPredicate {
     }
 };
 
+enum vertexType { START, END, MERGE, SPLIT, REGULAR_UPPER, REGULAR_LOWER };
+
 
 
 /* tassellation.cpp */
 
-std::vector<std::vector<Coord>> subdividePolygon(const std::vector<Coord>& perimeter, const std::vector<Edge>& diagonals);
-const Edge* findUpperBound(double y,double x, std::set<Edge> bounds);
+const Edge* findUpperBound(double y,double x, std::set<Edge> &bounds);
 std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>& polygon);
 std::vector<Triangle> tessellateMonotonePolygon(const std::vector<Coord>& polygon);
+vertexType getVertexType(const Coord &vertex, const Coord &next, const Coord &prev );
 
 /* algebra.cpp */
 

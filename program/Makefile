@@ -3,7 +3,7 @@ PROGRAM_NAME = program
 
 # Compilatore da utilizzare
 CXX = g++
-CXXFLAGS = -std=c++11 -w
+CXXFLAGS = -std=c++11 -w -g 
 
 # Lista dei file sorgenti
 SOURCES = algebra.cpp program.cpp tessellation.cpp
@@ -15,9 +15,7 @@ HEADERS = headers.hpp
 $(PROGRAM_NAME): $(SOURCES) $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(SOURCES) -o $(PROGRAM_NAME)
 
-# Comando per pulire i file oggetto e l'eseguibile
-clean:
-	rm -f $(PROGRAM_NAME)
+
 
 # Imposta il target 'all' come predefinito
 all: $(PROGRAM_NAME)
