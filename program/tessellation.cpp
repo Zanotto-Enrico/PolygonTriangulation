@@ -70,7 +70,6 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
 
         if (type == MERGE) 
         {
-            std::cout << "Merge    " << event.x << "," << event.y << std::endl;
             const Edge* e = findUpperBound(event.y,event.x, activeEdges);
             if(mergeFound)
             {
@@ -87,8 +86,6 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
         }
         else if (type == SPLIT) 
         {
-
-            std::cout << "Split    " << event.x << "," << event.y << std::endl;
             const Edge* e = findUpperBound(event.y,event.x, activeEdges);
             if(!mergeFound)
             {
@@ -108,7 +105,6 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
         }
         else if(type == START) 
         {
-            std::cout << "Start    " << event.x << "," << event.y << std::endl;
             monotones.push_back(std::make_pair(std::vector<Coord>{event}, std::vector<Coord>{}));
             activeEdges.insert(Edge(prev,event,event,monotones.size()-1));
         }
@@ -120,13 +116,11 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
                 monotones[indexOfMergeMonotone].second.push_back(event);
                 mergeFound = false;
             }
-            std::cout << "End      " << event.x << "," << event.y << std::endl;
             monotones[*e->monotonePolygonIndex].second.push_back(event);
             activeEdges.erase(Edge(event,next));
         }
         else if (type == REGULAR_UPPER) 
         {
-            std::cout << "Upper    " << event.x << "," << event.y << std::endl;
             const Edge* e = &(*activeEdges.find(Edge(event,next)));
             if(mergeFound)
             {
@@ -146,7 +140,6 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
                 mergeFound = false;
             }
             monotones[*e->monotonePolygonIndex].second.push_back(event);
-            std::cout << "Lower    " << event.x << "," << event.y << std::endl;
         }
     }
 
