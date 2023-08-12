@@ -24,13 +24,24 @@ const Edge* findUpperBound(double y,double x, std::set<Edge> &bounds)
 vertexType getVertexType(const Coord &vertex, const Coord &next, const Coord &prev )
 {
     if(prev.x < vertex.x && next.x < vertex.x)
-        if(prev.y > vertex.y)   return MERGE;
+    {
+        Coord vector_pc = {vertex.x - prev.x, vertex.y - prev.y, 0.0, 0};
+        Coord vector_pn = {next.x - prev.x, next.y - prev.y, 0.0, 0};
+        double cross_product = vector_pc.x * vector_pn.y - vector_pc.y * vector_pn.x; // cross product between 2 vectors
+        
+        if(cross_product < 0)   return MERGE;
         else                    return END;
+    }
     
     if(prev.x > vertex.x && next.x > vertex.x)
-        if(prev.y > vertex.y)   return START;
-        else                    return SPLIT;
-
+    {
+        Coord vector_pc = {vertex.x - prev.x, vertex.y - prev.y, 0.0, 0};
+        Coord vector_pn = {next.x - prev.x, next.y - prev.y, 0.0, 0};
+        double cross_product = vector_pc.x * vector_pn.y - vector_pc.y * vector_pn.x; // cross product between 2 vectors
+        
+        if(cross_product < 0)   return SPLIT;
+        else                    return START;
+    }
     if( next.x <= vertex.x && vertex.x <= prev.x)   return REGULAR_UPPER;
     if( next.x >= vertex.x && vertex.x >= prev.x)   return REGULAR_LOWER;
 }
