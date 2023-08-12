@@ -6,8 +6,7 @@
 #include <set>
 #include <list>
 #include <map>
-#include <stack>
-#include <queue>
+#include <deque>
 
 struct Coord
 {
@@ -116,7 +115,7 @@ enum vertexType { START, END, MERGE, SPLIT, REGULAR_UPPER, REGULAR_LOWER };
 
 const Edge* findUpperBound(double y,double x, std::set<Edge> &bounds);
 std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>& polygon);
-std::vector<Triangle> triangulateMonotonePolygon(std::vector<Coord>& polygon);
+std::vector<Triangle> triangulateMonotonePolygon(const std::vector<Coord>& polygon);
 vertexType getVertexType(const Coord &vertex, const Coord &next, const Coord &prev );
 
 /* algebra.cpp */
