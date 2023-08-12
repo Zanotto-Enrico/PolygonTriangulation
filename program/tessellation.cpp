@@ -164,20 +164,20 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
 }
 
 
-std::vector<Triangle> triangulateMonotonePolygon(std::vector<Coord>& polygon) {
+std::vector<Triangle> triangulateMonotonePolygon(const std::vector<Coord>& polygon) {
     std::vector<Triangle> triangles;
     int poly_len = polygon.size();
 
     if(poly_len < 3 ) return  std::vector<Triangle>();
-
-    for (size_t i = 0; i < polygon.size(); ++i)
-        polygon[i].index = i;
     
     //////
-    std::sort(polygon.begin(), polygon.end());
-    std::stack<Coord> stack;
-    stack.push(polygon[0]);
-    stack.push(polygon[1]);
+    std::vector<Coord> eventQueue = polygon;
+    for (size_t i = 0; i < polygon.size(); ++i)
+        eventQueue[i].index = i;
+    std::sort(eventQueue.begin(), eventQueue.end());
+    std::deque<Coord> deque;
+    deque.push_front(eventQueue[0]);
+    deque.push_front(eventQueue[1]);
     //////
 /*
     // obtaining the first vertex 
@@ -191,39 +191,39 @@ std::vector<Triangle> triangulateMonotonePolygon(std::vector<Coord>& polygon) {
 */
     for (int i = 2; i < poly_len; ++i)
     {
-        Coord current = polygon[i];
+        Coord current = eventQueue[i];
         Coord prev = polygon[(current.index+poly_len-1)%poly_len];
         Coord next = polygon[(current.index+1)%poly_len];
 
-        Coord last = stack.top();
+        Coord last = deque.front();
         vertexType lastType = getVertexType(last, polygon[(last.index+1)%poly_len], polygon[(last.index+poly_len-1)%poly_len]);
 
         vertexType type = getVertexType(current,next,prev);
         if(type == lastType)
         {
-            stack.push(current);
+            deque.push_front(current);
             while (current.y > last.y)
             {
-                Coord tmp = stack.top();
-                stack.pop();
-                stack.pop();
+                Coord tmp = deque.front();
+                deque.pop_front();
+                deque.pop_front();
                 triangles.push_back({tmp,last,current});
-                stack.push(tmp);
+                deque.push_front(tmp);
                 i++; 
             }
         }
         else
         {
-            Coord tmp = stack.top();
-            stack.pop();
-            while(stack.size() >= 2)
+            Coord tmp = deque.back();
+            deque.pop_back();
+            while(deque.size() >= 2)
             {
-                triangles.push_back({tmp,current,stack.top()});
-                tmp = stack.top();
-                stack.pop();
+                triangles.push_back({tmp,current,deque.back()});
+                tmp = deque.back();          //
+                deque.pop_back();                // no devi prendere da sotto!!!!!!!!
             }
-            triangles.push_back({tmp,current,stack.top()});
-            stack.push(current);
+            triangles.push_back({tmp,current,deque.back()});
+            deque.push_front(current);
         }   
     }
 
