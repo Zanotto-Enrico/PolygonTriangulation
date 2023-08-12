@@ -31,7 +31,7 @@ std::vector<Triangle> getMesh(std::vector<Coord> polygon)
   //polygon = {{1,1},{3,4},{1,4},{2,2}}; 
   //polygon = {{0,0},{2,0},{6,4},{2,8},{0,8},{4,4}}; 
   //polygon = {{1,2},{5,1},{19,1},{10,5},{15,10},{5,10},{1,9}, {6,4}}; 
-  polygon = {{1,2},{2,1},{4,2},{6,1},{8,2},{7,4},{5,3}, {3,4}};
+  //polygon = {{1,2},{2,1},{4,2},{6,1},{8,2},{7,4},{5,3}, {3,4}};
   
   std::vector<Triangle> triangles;
 
@@ -50,23 +50,10 @@ std::vector<Triangle> getMesh(std::vector<Coord> polygon)
 
     for (auto p : partitionPolygonIntoMonotone(polygon))
     {
-<<<<<<< HEAD
-      for(auto t : tessellateMonotonePolygon(p) )
+      for(auto t : triangulateMonotonePolygon(p) )
       {
         triangles.push_back(t);
       }
-=======
-        std::cout << "Monotone polygon: ";
-        for(auto v : p)
-        {
-            std::cout  <<"(" << v.x << ";" << v.y << ")  "; 
-        }
-        std::cout << "\n";
-        for(auto t : triangulateMonotonePolygon(p) )
-        {
-            std::cout  <<"   Triangle: (" << t.p1.x << ";" << t.p1.y << ")  (" << t.p2.x << ";" << t.p2.y << ")  (" << t.p3.x << ";" << t.p3.y << ")\n"; 
-        }
->>>>>>> master
     }
 
     return triangles;
