@@ -195,7 +195,7 @@ std::vector<Triangle> triangulateMonotonePolygon(const std::vector<Coord>& polyg
         if(type == lastType)
         {
             deque.push_front(current);
-            if (current.y > last.y)
+            if ( ( current.y > last.y && type==REGULAR_LOWER ) || ( current.y < last.y && type==REGULAR_UPPER ) )
             {
                 deque.pop_front();
                 deque.pop_front();
