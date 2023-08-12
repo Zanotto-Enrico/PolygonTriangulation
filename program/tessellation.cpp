@@ -195,14 +195,12 @@ std::vector<Triangle> triangulateMonotonePolygon(const std::vector<Coord>& polyg
         if(type == lastType)
         {
             deque.push_front(current);
-            while (current.y > last.y)
+            if (current.y > last.y)
             {
-                Coord tmp = deque.front();
                 deque.pop_front();
                 deque.pop_front();
-                triangles.push_back({tmp,last,current});
-                deque.push_front(tmp);
-                i++; 
+                triangles.push_back({deque.front(),last,current});
+                deque.push_front(current);
             }
         }
         else
