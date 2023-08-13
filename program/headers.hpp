@@ -51,8 +51,15 @@ public:
     
     Coord* helper; // sweep line helper vertex
     int* monotonePolygonIndex; // index of the relative monotone polygon  
+    int* mergeMonotonePolygonIndex; // index of the relative monotone polygon of the last seen merge vertex
 
-    Edge(const Coord& vertex1, const Coord& vertex2) {
+    Edge() {
+        helper = new Coord;
+        monotonePolygonIndex = new int(-1);
+        mergeMonotonePolygonIndex = new int(-1);
+    }
+
+    Edge(const Coord& vertex1, const Coord& vertex2) : Edge() {
         if (vertex1.x < vertex2.x) {
             start = vertex1;
             end = vertex2;
@@ -60,30 +67,32 @@ public:
             start = vertex2;
             end = vertex1;
         }
-        helper = new Coord();
     }
     Edge(const Coord& vertex1, const Coord& vertex2, const Coord& help) : Edge(vertex1,vertex2) 
     {    
-        helper = new Coord(help);
+        *helper = help;
     }
     Edge(const Coord& vertex1, const Coord& vertex2, const Coord& help, int index) : Edge(vertex1,vertex2,help) 
     {    
-        monotonePolygonIndex = new int(index);
+        *monotonePolygonIndex = index;
     }
 
     // Comparison operator for sorting edge events based on y-coordinate.
     bool operator<(const Edge& other) const
-    {
-        if(start.y == other.start.y)
-            if( start.x == other.start.x)
-                if( end.y == other.end.y)
-                    end.x < other.end.x;
-                else
-                    return end.y < other.end.y;
-            else
-                return start.x < other.start.x;
-        return start.y < other.start.y;
+{
+    double thisMinY = std::min(start.y, end.y);
+    double thisMaxY = std::max(start.y, end.y);
+
+    double otherMinY = std::min(other.start.y, other.end.y);
+    double otherMaxY = std::max(other.start.y, other.end.y);
+    if (thisMaxY <= otherMinY) {
+        return true;
+    } else if (thisMinY >= otherMaxY) {
+        return false;
+    } else {
+        return start.x > other.start.x;
     }
+}
     bool operator==(const Edge& other) const {
         return start == other.start && end == other.end;
     }

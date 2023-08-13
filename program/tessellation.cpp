@@ -63,10 +63,6 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
     // Sweep line partitions boundaries
     std::set<Edge> activeEdges;
 
-    // true if previous vertex was a merge vertex
-    bool mergeFound = false;
-    int indexOfMergeMonotone;
-
     // vecotor of all monotone polygons found devided in upper and lower chains
     std::vector<std::pair<std::vector<Coord>,std::vector<Coord>>> monotones;
 
@@ -82,23 +78,22 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
         if (type == MERGE) 
         {
             const Edge* e = findUpperBound(event.y,event.x, activeEdges);
-            if(mergeFound)
+            if(*e->mergeMonotonePolygonIndex != -1)
             {
-                monotones[indexOfMergeMonotone].first.push_back(event);
+                monotones[*e->mergeMonotonePolygonIndex].first.push_back(event);
             }
             if(e)
-                e->helper->x = event.x; e->helper->y = event.y; e->helper->z = event.z; e->helper->index = event.index;
+                e->helper->x = event.x; e->helper->y = event.y; e->helper->z = event.z; e->helper->index = event.index; 
             
             monotones[*e->monotonePolygonIndex].second.push_back(event);
-            indexOfMergeMonotone = *activeEdges.find(Edge(event,next))->monotonePolygonIndex;
-            monotones[indexOfMergeMonotone].first.push_back(event);
+            *e->mergeMonotonePolygonIndex = *activeEdges.find(Edge(event,next))->monotonePolygonIndex;
+            monotones[*e->mergeMonotonePolygonIndex].first.push_back(event);
             activeEdges.erase(Edge(event,next));
-            mergeFound = true;
         }
         else if (type == SPLIT) 
         {
             const Edge* e = findUpperBound(event.y,event.x, activeEdges);
-            if(!mergeFound)
+            if(*e->mergeMonotonePolygonIndex == -1)
             {
                 monotones.push_back(std::make_pair(std::vector<Coord>{*e->helper}, std::vector<Coord>{}));
                 activeEdges.insert(Edge(prev,event,event, *e->monotonePolygonIndex));
@@ -107,12 +102,12 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
             }
             else
             {
-                activeEdges.insert(Edge(prev,event,event, indexOfMergeMonotone));
-                monotones[indexOfMergeMonotone].first.push_back(event);
+                activeEdges.insert(Edge(prev,event,event, *e->mergeMonotonePolygonIndex));
+                monotones[*e->mergeMonotonePolygonIndex].first.push_back(event);
             }
             monotones[*e->monotonePolygonIndex].second.push_back(event);
             
-            mergeFound = false;
+            *e->mergeMonotonePolygonIndex = -1;
         }
         else if(type == START) 
         {
@@ -122,10 +117,10 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
         else if(type == END) 
         {
             const Edge* e = &(*activeEdges.find(Edge(event,next)));
-            if(mergeFound)
+            if(*e->mergeMonotonePolygonIndex != -1)
             {
-                monotones[indexOfMergeMonotone].second.push_back(event);
-                mergeFound = false;
+                monotones[*e->mergeMonotonePolygonIndex].second.push_back(event);
+                *e->mergeMonotonePolygonIndex = -1;
             }
             monotones[*e->monotonePolygonIndex].second.push_back(event);
             activeEdges.erase(Edge(event,next));
@@ -133,10 +128,10 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
         else if (type == REGULAR_UPPER) 
         {
             const Edge* e = &(*activeEdges.find(Edge(event,next)));
-            if(mergeFound)
+            if(*e->mergeMonotonePolygonIndex != -1)
             {
                 monotones[*e->monotonePolygonIndex].first.push_back(event);
-                mergeFound = false;
+                *e->mergeMonotonePolygonIndex = -1;
             }
             activeEdges.insert(Edge(event,prev,event,*e->monotonePolygonIndex));
             activeEdges.erase(Edge(event,next));
@@ -145,10 +140,10 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
         else if (type == REGULAR_LOWER) 
         {
             const Edge* e = findUpperBound(event.y,event.x, activeEdges);
-            if(mergeFound)
+            if(*e->mergeMonotonePolygonIndex != -1)
             {
-                monotones[indexOfMergeMonotone].second.push_back(event);
-                mergeFound = false;
+                monotones[*e->mergeMonotonePolygonIndex].second.push_back(event);
+                *e->mergeMonotonePolygonIndex = -1;
             }
             monotones[*e->monotonePolygonIndex].second.push_back(event);
         }
