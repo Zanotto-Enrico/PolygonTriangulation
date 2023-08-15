@@ -129,7 +129,7 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
                     activeEdges.insert(Edge(prev,it,it,monotones.size()-1));
                 }
                 else
-                    monotones[*bound->monotonePolygonIndex].first.push_back(event);
+                    monotones[*bound->monotonePolygonIndex].second.push_back(event);
 
             }
             else if(it.x == next.x) //start-upper point
