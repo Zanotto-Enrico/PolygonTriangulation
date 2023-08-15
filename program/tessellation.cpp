@@ -113,7 +113,6 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
         }
         else if(type == START) 
         {
-            std::cout << "Start    " << event.x << "," << event.y << std::endl;
 
             Coord it = event;
             if(it.x == prev.x)  //start-down point
@@ -160,7 +159,6 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
                     monotones[*e->mergeMonotonePolygonIndex].second.push_back(event);
                     *e->mergeMonotonePolygonIndex = -1;
                 }
-                std::cout << "End      " << event.x << "," << event.y << std::endl;
                 monotones[*e->monotonePolygonIndex].second.push_back(event);
             }
             else
@@ -170,7 +168,6 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
                     monotones[*near->mergeMonotonePolygonIndex].second.push_back(event);
                     *near->mergeMonotonePolygonIndex = -1;
                 }
-                std::cout << "End      " << event.x << "," << event.y << std::endl;
                 monotones[*near->monotonePolygonIndex].second.push_back(event);
                 activeEdges.erase(Edge(event,next)); 
             }
