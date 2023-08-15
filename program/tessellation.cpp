@@ -249,14 +249,14 @@ std::vector<Triangle> triangulateMonotonePolygon(const std::vector<Coord>& polyg
         vertexType type = getVertexType(current,next,prev);
         if(type == lastType)
         {
-            deque.push_front(current);
-            if ( ( current.y > last.y && type==REGULAR_LOWER ) || ( current.y < last.y && type==REGULAR_UPPER ) )
+            while ( (( current.y > last.y && type==REGULAR_LOWER ) || ( current.y < last.y && type==REGULAR_UPPER )) && deque.size() > 1)
             {
-                deque.pop_front();
+                last = deque.front();
                 deque.pop_front();
                 triangles.push_back({deque.front(),last,current});
-                deque.push_front(current);
+                
             }
+            deque.push_front(current);
         }
         else
         {
