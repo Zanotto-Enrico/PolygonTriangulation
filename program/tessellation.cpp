@@ -18,12 +18,14 @@ const Edge* findUpperBound(double y,double x, std::set<Edge> &bounds)
         ++it;
     }
 
-    return nullptr;  // Return a default Edge if not found
+    return nullptr;  
 }
 
 vertexType getVertexType(const Coord &vertex, const Coord &next, const Coord &prev )
 {
-    if(prev.x < vertex.x && next.x < vertex.x)
+    if(prev.x == vertex.x && vertex.x == next.x)
+        return VERTICAL;
+    if(prev.x <= vertex.x && next.x <= vertex.x)
     {
         Coord vector_pc = {vertex.x - prev.x, vertex.y - prev.y, 0.0, 0};
         Coord vector_pn = {next.x - prev.x, next.y - prev.y, 0.0, 0};
@@ -33,7 +35,7 @@ vertexType getVertexType(const Coord &vertex, const Coord &next, const Coord &pr
         else                    return END;
     }
     
-    if(prev.x > vertex.x && next.x > vertex.x)
+    if(prev.x >= vertex.x && next.x >= vertex.x)
     {
         Coord vector_pc = {vertex.x - prev.x, vertex.y - prev.y, 0.0, 0};
         Coord vector_pn = {next.x - prev.x, next.y - prev.y, 0.0, 0};
@@ -111,21 +113,52 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
         }
         else if(type == START) 
         {
-            monotones.push_back(std::make_pair(std::vector<Coord>{event}, std::vector<Coord>{}));
-            activeEdges.insert(Edge(prev,event,event,monotones.size()-1));
+            std::cout << "Start    " << event.x << "," << event.y << std::endl;
+            if(activeEdges.find(Edge(event, prev)) == activeEdges.end())
+            {
+                monotones.push_back(std::make_pair(std::vector<Coord>{event}, std::vector<Coord>{}));
+                
+                Coord it = event;
+                if(it.x == prev.x)
+                {
+                    while(it.x == prev.x)
+                    {
+                        it = prev;
+                        prev = polygon[(it.index+vertices_num-1)%vertices_num];
+                    }
+                    monotones[monotones.size()-1].first.push_back(it);
+                }
+                activeEdges.insert(Edge(prev,it,it,monotones.size()-1));
+            }
         }
         else if(type == END) 
         {
-            const Edge* e = &(*activeEdges.find(Edge(event,next)));
-            if(*e->mergeMonotonePolygonIndex != -1)
+            auto near = activeEdges.find(Edge(event,next));
+            if( near == activeEdges.end())// if there is no near edge, that edge is vertical
             {
-                monotones[*e->mergeMonotonePolygonIndex].second.push_back(event);
-                *e->mergeMonotonePolygonIndex = -1;
+                const Edge* e = findUpperBound(event.y,event.x, activeEdges);
+                if(*e->mergeMonotonePolygonIndex != -1)
+                {
+                    monotones[*e->mergeMonotonePolygonIndex].second.push_back(event);
+                    *e->mergeMonotonePolygonIndex = -1;
+                }
+                std::cout << "End      " << event.x << "," << event.y << std::endl;
+                monotones[*e->monotonePolygonIndex].second.push_back(event);
             }
-            monotones[*e->monotonePolygonIndex].second.push_back(event);
-            activeEdges.erase(Edge(event,next));
+            else
+            {
+                if(*near->mergeMonotonePolygonIndex != -1)
+                {
+                    monotones[*near->mergeMonotonePolygonIndex].second.push_back(event);
+                    *near->mergeMonotonePolygonIndex = -1;
+                }
+                std::cout << "End      " << event.x << "," << event.y << std::endl;
+                monotones[*near->monotonePolygonIndex].second.push_back(event);
+                activeEdges.erase(Edge(event,next)); 
+            }
         }
-        else if (type == REGULAR_UPPER) 
+
+        if (type == REGULAR_UPPER) 
         {
             const Edge* e = &(*activeEdges.find(Edge(event,next)));
             if(*e->mergeMonotonePolygonIndex != -1)
@@ -137,7 +170,8 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
             activeEdges.erase(Edge(event,next));
             monotones[*e->monotonePolygonIndex].first.push_back(event);
         }
-        else if (type == REGULAR_LOWER) 
+        
+        if (type == REGULAR_LOWER) 
         {
             const Edge* e = findUpperBound(event.y,event.x, activeEdges);
             if(*e->mergeMonotonePolygonIndex != -1)
