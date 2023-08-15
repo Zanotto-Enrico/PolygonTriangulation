@@ -116,7 +116,7 @@ struct LessPredicate {
     }
 };
 
-enum vertexType { START, END, MERGE, SPLIT, REGULAR_UPPER, REGULAR_LOWER };
+enum vertexType { START, END, MERGE, SPLIT, REGULAR_UPPER, REGULAR_LOWER, VERTICAL};
 
 
 
