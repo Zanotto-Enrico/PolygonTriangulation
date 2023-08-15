@@ -114,22 +114,40 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
         else if(type == START) 
         {
             std::cout << "Start    " << event.x << "," << event.y << std::endl;
-            if(activeEdges.find(Edge(event, prev)) == activeEdges.end())
+
+            Coord it = event;
+            if(it.x == prev.x)  //start-down point
+            {
+                while(it.x == prev.x)
+                {
+                    it = prev;
+                    prev = polygon[(prev.index + vertices_num - 1)%vertices_num];
+                }
+                auto bound = activeEdges.find(Edge(it, prev));
+                if(bound == activeEdges.end()){
+                    monotones.push_back(std::make_pair(std::vector<Coord>{event}, std::vector<Coord>{}));
+                    activeEdges.insert(Edge(prev,it,it,monotones.size()-1));
+                }
+                else
+                    monotones[*bound->monotonePolygonIndex].first.push_back(event);
+
+            }
+            else if(it.x == next.x) //start-upper point
+            {
+                auto bound = activeEdges.find(Edge(it, prev));
+                if(bound == activeEdges.end()){
+                    monotones.push_back(std::make_pair(std::vector<Coord>{event}, std::vector<Coord>{}));
+                    activeEdges.insert(Edge(prev,it,it,monotones.size()-1));
+                }
+                else
+                    monotones[*bound->monotonePolygonIndex].first.push_back(event);
+            }
+            else
             {
                 monotones.push_back(std::make_pair(std::vector<Coord>{event}, std::vector<Coord>{}));
-                
-                Coord it = event;
-                if(it.x == prev.x)
-                {
-                    while(it.x == prev.x)
-                    {
-                        it = prev;
-                        prev = polygon[(it.index+vertices_num-1)%vertices_num];
-                    }
-                    monotones[monotones.size()-1].first.push_back(it);
-                }
                 activeEdges.insert(Edge(prev,it,it,monotones.size()-1));
             }
+            
         }
         else if(type == END) 
         {
