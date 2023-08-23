@@ -79,20 +79,20 @@ public:
 
     // Comparison operator for sorting edge events based on y-coordinate.
     bool operator<(const Edge& other) const
-{
-    double thisMinY = std::min(start.y, end.y);
-    double thisMaxY = std::max(start.y, end.y);
+    {
+        double thisMinY = std::min(start.y, end.y);
+        double thisMaxY = std::max(start.y, end.y);
 
-    double otherMinY = std::min(other.start.y, other.end.y);
-    double otherMaxY = std::max(other.start.y, other.end.y);
-    if (thisMaxY <= otherMinY) {
-        return true;
-    } else if (thisMinY >= otherMaxY) {
-        return false;
-    } else {
-        return start.x > other.start.x;
+        double otherMinY = std::min(other.start.y, other.end.y);
+        double otherMaxY = std::max(other.start.y, other.end.y);
+        if (thisMaxY <= otherMinY) {
+            return true;
+        } else if (thisMinY >= otherMaxY) {
+            return false;
+        } else {
+            return start.x > other.start.x;
+        }
     }
-}
     bool operator==(const Edge& other) const {
         return start == other.start && end == other.end;
     }
@@ -126,6 +126,7 @@ const Edge* findUpperBound(double y,double x, std::set<Edge> &bounds);
 std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>& polygon);
 std::vector<Triangle> triangulateMonotonePolygon(const std::vector<Coord>& polygon);
 vertexType getVertexType(const Coord &vertex, const Coord &next, const Coord &prev );
+bool isCounterClockwise(const std::vector<Coord>& vertices);
 
 /* algebra.cpp */
 

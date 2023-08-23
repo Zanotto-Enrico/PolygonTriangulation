@@ -21,6 +21,19 @@ const Edge* findUpperBound(double y,double x, std::set<Edge> &bounds)
     return nullptr;  
 }
 
+bool isCounterClockwise(const std::vector<Coord>& vertices) {
+    double sum = 0.0;
+    size_t numVertices = vertices.size();
+
+    for (size_t i = 0; i < numVertices; ++i) {
+        const Coord& current = vertices[i];
+        const Coord& next = vertices[(i + 1) % numVertices]; 
+        sum += (next.x - current.x) * (next.y + current.y);
+    }
+
+    return sum > 0.0; // If the sum id positive the perimeter is CCW
+}
+
 vertexType getVertexType(const Coord &vertex, const Coord &next, const Coord &prev )
 {
     if(prev.x == vertex.x && vertex.x == next.x)
@@ -53,8 +66,10 @@ vertexType getVertexType(const Coord &vertex, const Coord &next, const Coord &pr
 */
 std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>& polygon)
 {
+    bool isCCW = isCounterClockwise(polygon);
     for (size_t i = 0; i < polygon.size(); ++i)
     {
+        if(isCCW) polygon[i].y = -polygon[i].y;
         polygon[i].index = i;
     }
     int vertices_num = polygon.size();
@@ -81,9 +96,8 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
         {
             const Edge* e = findUpperBound(event.y,event.x, activeEdges);
             if(*e->mergeMonotonePolygonIndex != -1)
-            {
                 monotones[*e->mergeMonotonePolygonIndex].first.push_back(event);
-            }
+            
             if(e)
                 e->helper->x = event.x; e->helper->y = event.y; e->helper->z = event.z; e->helper->index = event.index; 
             
@@ -178,10 +192,12 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
             const Edge* e = &(*activeEdges.find(Edge(event,next)));
             if(*e->mergeMonotonePolygonIndex != -1)
             {
-                monotones[*e->monotonePolygonIndex].first.push_back(event);
+                monotones[*e->mergeMonotonePolygonIndex].first.push_back(event);
+                activeEdges.insert(Edge(event,prev,event,*e->mergeMonotonePolygonIndex));
                 *e->mergeMonotonePolygonIndex = -1;
             }
-            activeEdges.insert(Edge(event,prev,event,*e->monotonePolygonIndex));
+            else
+                activeEdges.insert(Edge(event,prev,event,*e->monotonePolygonIndex));
             activeEdges.erase(Edge(event,next));
             monotones[*e->monotonePolygonIndex].first.push_back(event);
         }
@@ -202,23 +218,42 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
     for (auto m : monotones)
     {
         std::vector<Coord> newPol;
-        for (int i = m.first.size() - 1; i >= 0; --i) 
+        for (int i = m.first.size() - 1; i >= 0; --i)
+        {
+            if(isCCW) m.first[i].y = -m.first[i].y;
             newPol.push_back(m.first[i]);
+        }
         for (int i = 0 ; i < m.second.size(); ++i) 
+        {
+            if(isCCW) m.second[i].y = -m.second[i].y;
             newPol.push_back(m.second[i]);
+        }
         monotonePolygons.push_back(newPol);
     }
     return monotonePolygons;
 }
 
+int DetermineConvexity(const Coord& p1, const Coord& p2, const Coord& p3)
+{
+    Coord v1 = {p2.x - p1.x, p2.y - p1.y, p2.z - p1.z};
+    Coord v2 = {p3.x - p1.x, p3.y - p1.y, p3.z - p1.z};
+
+    Coord cross = crossProduct(v1, v2);
+    
+    if (cross.x > 0 || (cross.x == 0 && (cross.y > 0 || (cross.y == 0 && cross.z > 0))))
+        return 1; // Curva concava
+    else if (cross.x < 0 || (cross.x == 0 && (cross.y < 0 || (cross.y == 0 && cross.z < 0))))
+        return -1; // Curva convessa
+    else
+        return 0; // Punti allineati
+}
 
 std::vector<Triangle> triangulateMonotonePolygon(const std::vector<Coord>& polygon) {
     std::vector<Triangle> triangles;
     int poly_len = polygon.size();
 
     if(poly_len < 3 ) return  std::vector<Triangle>();
-    
-    //////
+
     std::vector<Coord> eventQueue = polygon;
     for (size_t i = 0; i < polygon.size(); ++i)
         eventQueue[i].index = i;
@@ -226,17 +261,7 @@ std::vector<Triangle> triangulateMonotonePolygon(const std::vector<Coord>& polyg
     std::deque<Coord> deque;
     deque.push_front(eventQueue[0]);
     deque.push_front(eventQueue[1]);
-    //////
-/*
-    // obtaining the first vertex 
-    int first = 0;
-    for(int i = 1; i < poly_len; i++)
-        if(polygon[first].x > polygon[i].x)   first = i;
 
-    std::stack<Coord> stack;
-    stack.push(polygon[first]);
-    stack.push(polygon[(first+1)%poly_len]);
-*/
     for (int i = 2; i < poly_len; ++i)
     {
         Coord current = eventQueue[i];
@@ -249,13 +274,14 @@ std::vector<Triangle> triangulateMonotonePolygon(const std::vector<Coord>& polyg
         vertexType type = getVertexType(current,next,prev);
         if(type == lastType)
         {
-            while ( (( current.y > last.y && type==REGULAR_LOWER ) || ( current.y < last.y && type==REGULAR_UPPER )) && deque.size() > 1)
+            deque.pop_front();
+            while ( (( DetermineConvexity(current,last,deque.front()) < 0 && type==REGULAR_LOWER ) || ( DetermineConvexity(current,last,deque.front()) > 0 && type==REGULAR_UPPER )) && deque.size() > 0)
             {
+                triangles.push_back({deque.front(),last,current});
                 last = deque.front();
                 deque.pop_front();
-                triangles.push_back({deque.front(),last,current});
-                
             }
+            deque.push_front(last);
             deque.push_front(current);
         }
         else

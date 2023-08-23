@@ -94,20 +94,21 @@ void getUserInput(std::vector<Coord> &polygon)
 
 int main(int argc, char* argv[])
 {
+  while(1){
+    std::vector<Coord> polygon;
 
-  std::vector<Coord> polygon;
+    getUserInput(polygon);
 
-  getUserInput(polygon);
+    std::vector<Triangle> triangles = getMesh(polygon);
 
-  std::vector<Triangle> triangles = getMesh(polygon);
-
-  //for(int i = 0; i < 1000000; i++)
-  for (Triangle triangle : triangles)
-  {
-    std::cout << "[(" <<  triangle.p1.x << ";" << triangle.p1.y  << 
-                 "),(" <<  triangle.p2.x << ";" << triangle.p2.y  <<
-                 "),(" <<  triangle.p3.x << ";" << triangle.p3.y  << ")]"<<std::endl;
+    //for(int i = 0; i < 1000000; i++)
+    for (Triangle triangle : triangles)
+    {
+      std::cout << "[(" <<  triangle.p1.x << ";" << triangle.p1.y  << 
+                  "),(" <<  triangle.p2.x << ";" << triangle.p2.y  <<
+                  "),(" <<  triangle.p3.x << ";" << triangle.p3.y  << ")]"<<std::endl;
+    }
+    std::cout << "end\n";
   }
-
   return 0;
 }
