@@ -97,35 +97,35 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
         if (type == MERGE) 
         {
             const Edge* e = findUpperBound(event.y,event.x, activeEdges);
-            if(*e->mergeMonotonePolygonIndex != -1)
-                monotones[*e->mergeMonotonePolygonIndex].first.push_back(event);
+            if(e->getMergeMonotonePolygonIndex() != -1)
+                monotones[e->getMergeMonotonePolygonIndex()].first.push_back(event);
             
             if(e)
-                e->helper->x = event.x; e->helper->y = event.y; e->helper->z = event.z; e->helper->index = event.index; 
+                e->getHelper()->x = event.x; e->getHelper()->y = event.y; e->getHelper()->z = event.z; e->getHelper()->index = event.index; 
             
-            monotones[*e->monotonePolygonIndex].second.push_back(event);
-            *e->mergeMonotonePolygonIndex = *activeEdges.find(Edge(event,next))->monotonePolygonIndex;
-            monotones[*e->mergeMonotonePolygonIndex].first.push_back(event);
+            monotones[e->getMonotonePolygonIndex()].second.push_back(event);
+            e->setMergeMonotonePolygonIndex(activeEdges.find(Edge(event,next))->getMonotonePolygonIndex());
+            monotones[e->getMergeMonotonePolygonIndex()].first.push_back(event);
             activeEdges.erase(Edge(event,next));
         }
         else if (type == SPLIT) 
         {
             const Edge* e = findUpperBound(event.y,event.x, activeEdges);
-            if(*e->mergeMonotonePolygonIndex == -1)
+            if(e->getMergeMonotonePolygonIndex() == -1)
             {
-                monotones.push_back(std::make_pair(std::vector<Coord>{*e->helper}, std::vector<Coord>{}));
-                activeEdges.insert(Edge(prev,event,event, *e->monotonePolygonIndex));
-                monotones[*e->monotonePolygonIndex].first.push_back(event);
-                *e->monotonePolygonIndex = monotones.size()-1;
+                monotones.push_back(std::make_pair(std::vector<Coord>{*e->getHelper()}, std::vector<Coord>{}));
+                activeEdges.insert(Edge(prev,event,event, e->getMonotonePolygonIndex()));
+                monotones[e->getMonotonePolygonIndex()].first.push_back(event);
+                e->setMonotonePolygonIndex(monotones.size()-1);
             }
             else
             {
-                activeEdges.insert(Edge(prev,event,event, *e->mergeMonotonePolygonIndex));
-                monotones[*e->mergeMonotonePolygonIndex].first.push_back(event);
+                activeEdges.insert(Edge(prev,event,event, e->getMergeMonotonePolygonIndex()));
+                monotones[e->getMergeMonotonePolygonIndex()].first.push_back(event);
             }
-            monotones[*e->monotonePolygonIndex].second.push_back(event);
+            monotones[e->getMonotonePolygonIndex()].second.push_back(event);
             
-            *e->mergeMonotonePolygonIndex = -1;
+            e->setMergeMonotonePolygonIndex(-1);
         }
         else if(type == START) 
         {
@@ -136,39 +136,39 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
         else if(type == END) 
         {
             auto near = activeEdges.find(Edge(event,next));
-            if(*near->mergeMonotonePolygonIndex != -1)
+            if(near->getMergeMonotonePolygonIndex() != -1)
             {
-                monotones[*near->mergeMonotonePolygonIndex].second.push_back(event);
-                *near->mergeMonotonePolygonIndex = -1;
+                monotones[near->getMergeMonotonePolygonIndex()].second.push_back(event);
+                near->setMergeMonotonePolygonIndex(-1);
             }
-            monotones[*near->monotonePolygonIndex].second.push_back(event);
+            monotones[near->getMonotonePolygonIndex()].second.push_back(event);
             activeEdges.erase(Edge(event,next)); 
         }
 
         if (type == REGULAR_UPPER) 
         {
             const Edge* e = &(*activeEdges.find(Edge(event,next)));
-            if(*e->mergeMonotonePolygonIndex != -1)
+            if(e->getMergeMonotonePolygonIndex() != -1)
             {
-                monotones[*e->mergeMonotonePolygonIndex].first.push_back(event);
-                activeEdges.insert(Edge(event,prev,event,*e->mergeMonotonePolygonIndex));
-                *e->mergeMonotonePolygonIndex = -1;
+                monotones[e->getMergeMonotonePolygonIndex()].first.push_back(event);
+                activeEdges.insert(Edge(event,prev,event,e->getMergeMonotonePolygonIndex()));
+                e->setMergeMonotonePolygonIndex(-1);
             }
             else
-                activeEdges.insert(Edge(event,prev,event,*e->monotonePolygonIndex));
+                activeEdges.insert(Edge(event,prev,event,e->getMonotonePolygonIndex()));
             activeEdges.erase(Edge(event,next));
-            monotones[*e->monotonePolygonIndex].first.push_back(event);
+            monotones[e->getMonotonePolygonIndex()].first.push_back(event);
         }
         
         if (type == REGULAR_LOWER) 
         {
             const Edge* e = findUpperBound(event.y,event.x, activeEdges);
-            if(*e->mergeMonotonePolygonIndex != -1)
+            if(e->getMergeMonotonePolygonIndex() != -1)
             {
-                monotones[*e->mergeMonotonePolygonIndex].second.push_back(event);
-                *e->mergeMonotonePolygonIndex = -1;
+                monotones[e->getMergeMonotonePolygonIndex()].second.push_back(event);
+                e->setMergeMonotonePolygonIndex(-1);
             }
-            monotones[*e->monotonePolygonIndex].second.push_back(event);
+            monotones[e->getMonotonePolygonIndex()].second.push_back(event);
         }
     }
 

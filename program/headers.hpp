@@ -45,13 +45,15 @@ struct mySegment {
 
 class Edge
 {
+private:
+    Coord* helper; // sweep line helper vertex
+    int* monotonePolygonIndex; // index of the relative monotone polygon  
+    int* mergeMonotonePolygonIndex; // index of the relative monotone polygon of the last seen merge vertex
+
 public:
     Coord start;
     Coord end;
     
-    Coord* helper; // sweep line helper vertex
-    int* monotonePolygonIndex; // index of the relative monotone polygon  
-    int* mergeMonotonePolygonIndex; // index of the relative monotone polygon of the last seen merge vertex
 
     Edge() {
         helper = new Coord;
@@ -75,6 +77,17 @@ public:
     Edge(const Coord& vertex1, const Coord& vertex2, const Coord& help, int index) : Edge(vertex1,vertex2,help) 
     {    
         *monotonePolygonIndex = index;
+    }
+
+    // Copy constructor
+    Edge(const Edge& other)
+    {
+        start = other.start;
+        end = other.end;
+
+        helper = new Coord(*other.helper);
+        monotonePolygonIndex = new int(*other.monotonePolygonIndex);
+        mergeMonotonePolygonIndex = new int(*other.mergeMonotonePolygonIndex);
     }
 
     // Comparison operator for sorting edge events based on y-coordinate.
@@ -106,6 +119,35 @@ public:
         return !(*this == other);
     }
     
+        Coord* getHelper() const {
+        return helper;
+    }
+
+    void setHelper(const Coord& newHelper) const {
+        *helper = newHelper;
+    }
+
+    int getMonotonePolygonIndex() const {
+        return *monotonePolygonIndex;
+    }
+
+    void setMonotonePolygonIndex(int newIndex) const {
+        *monotonePolygonIndex = newIndex;
+    }
+
+    int getMergeMonotonePolygonIndex() const {
+        return *mergeMonotonePolygonIndex;
+    }
+
+    void setMergeMonotonePolygonIndex(int newIndex) const {
+        *mergeMonotonePolygonIndex = newIndex;
+    }
+
+    ~Edge() {
+        delete helper;
+        delete monotonePolygonIndex;
+        delete mergeMonotonePolygonIndex;
+    }
 
 };
 
