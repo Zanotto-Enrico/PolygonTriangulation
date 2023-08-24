@@ -156,8 +156,8 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
             }
             else
                 activeEdges.insert(Edge(event,prev,event,e->getMonotonePolygonIndex()));
-            activeEdges.erase(Edge(event,next));
             monotones[e->getMonotonePolygonIndex()].first.push_back(event);
+            activeEdges.erase(Edge(event,next));
         }
         
         if (type == REGULAR_LOWER) 
