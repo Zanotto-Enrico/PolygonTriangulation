@@ -17,7 +17,7 @@ struct Coord
     // Comparison operator for sorting vertices based on x-coordinate.
     bool operator<(const Coord& other) const
     {
-        return x < other.x;
+        return x < other.x || (x == other.x && y < other.y) ;
     }
 
     bool operator==(const Coord& other) const 
@@ -80,6 +80,9 @@ public:
     // Comparison operator for sorting edge events based on y-coordinate.
     bool operator<(const Edge& other) const
     {
+        if(this->start.x == other.start.x && this->end.x == other.end.x && 
+           this->start.y == other.start.y && this->end.y == other.end.y)
+            return false;
         double thisMinY = std::min(start.y, end.y);
         double thisMaxY = std::max(start.y, end.y);
 
@@ -90,7 +93,10 @@ public:
         } else if (thisMinY >= otherMaxY) {
             return false;
         } else {
-            return start.x > other.start.x;
+            if(start.x != other.start.x)
+                return start.x > other.start.x;
+            else
+                return end.x > other.end.x;
         }
     }
     bool operator==(const Edge& other) const {
