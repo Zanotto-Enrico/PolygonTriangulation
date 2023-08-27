@@ -144,8 +144,7 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
             monotones[near->getMonotonePolygonIndex()].second.push_back(event);
             activeEdges.erase(Edge(event,next)); 
         }
-
-        if (type == REGULAR_UPPER) 
+        else if (type == REGULAR_UPPER) 
         {
             const Edge* e = &(*activeEdges.find(Edge(event,next)));
             if(e->getMergeMonotonePolygonIndex() != -1)
@@ -159,8 +158,7 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
             monotones[e->getMonotonePolygonIndex()].first.push_back(event);
             activeEdges.erase(Edge(event,next));
         }
-        
-        if (type == REGULAR_LOWER) 
+        else if (type == REGULAR_LOWER) 
         {
             const Edge* e = findUpperBound(event.y,event.x, activeEdges);
             if(e->getMergeMonotonePolygonIndex() != -1)
@@ -199,11 +197,11 @@ int DetermineConvexity(const Coord& p1, const Coord& p2, const Coord& p3)
     Coord cross = crossProduct(v1, v2);
     
     if (cross.x > 0 || (cross.x == 0 && (cross.y > 0 || (cross.y == 0 && cross.z > 0))))
-        return 1; // Curva concava
+        return 1;   // Concave curve
     else if (cross.x < 0 || (cross.x == 0 && (cross.y < 0 || (cross.y == 0 && cross.z < 0))))
-        return -1; // Curva convessa
+        return -1;  // Convex curve
     else
-        return 0; // Punti allineati
+        return 0;   // The points are aligned
 }
 
 std::vector<Triangle> triangulateMonotonePolygon(const std::vector<Coord>& polygon) {
