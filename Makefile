@@ -1,23 +1,23 @@
-# Nome del programma da generare
-PROGRAM_NAME = program
 
-# Compilatore da utilizzare
+PROGRAM_NAME = ./out/program
+
+# Compiler tags
 CXX = g++
 CXXFLAGS = -std=c++11 -w -g 
 
-# Lista dei file sorgenti
+# source files
 SOURCES = algebra.cpp program.cpp tessellation.cpp
 
-# Lista dei file header
+# headers list
 HEADERS = headers.hpp
 
-# Generazione dell'eseguibile
+# compilation
 $(PROGRAM_NAME): $(SOURCES) $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(SOURCES) -o $(PROGRAM_NAME)
 
 
 
-# Imposta il target 'all' come predefinito
+# target all set as default
 all: $(PROGRAM_NAME)
 
 .PHONY: clean
