@@ -1,52 +1,12 @@
 #include "headers.hpp"
 #include <regex>
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*                        ^
-*                         |0
-*                         |
-*  10                * * *|* * * *
-*          * * * * *      |    *
-*           *             |   *
-*            *            |  *
-*              *          |    *
-*  5          *           |      *   
-*            *            |         * 
-*           *             |           *
-*          ***            |              *
-*  1          * * * * * * * * * * * * * * * * 
-*                         |
-*                         |6 
-*          1       5        10        15     
-*/
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 std::vector<Triangle> getMesh(std::vector<Coord> polygon)
 {
   double height = 10;
-  //std::vector<Coord> polygon = {{1,1},{14,1},{5,5},{10,10},{1,10}}; 
-  //polygon = {{1,2},{5,1},{19,1},{10,5},{15,10},{5,10},{1,9}, {2,4}}; 
-  //polygon = {{1,1},{3,4},{1,4},{2,2}}; 
-  //polygon = {{0,0},{2,0},{6,4},{2,8},{0,8},{4,4}}; 
-  //polygon = {{1,2},{5,1},{19,1},{10,5},{15,10},{5,10},{1,9}, {6,4}}; 
-  //polygon = {{1,2},{2,1},{4,2},{6,1},{8,2},{7,4},{5,3}, {3,4}};
 
   std::vector<Triangle> triangles;
 
-  /*std::vector<double> intersections = std::vector<double>();
-
-  for ( int i = polygon.size() - 1; i > 0; --i)
-  {
-    // generating 2 Triangles for the wall
-    triangles.push_back(Triangle{ {polygon[i].x,polygon[i].y,0.0},
-                                  {polygon[i].x,polygon[i].y,height},
-                                  {polygon[i-1].x,polygon[i-1].y,height}});
-    triangles.push_back(Triangle{ {polygon[i-1].x,polygon[i-1].y,0},
-                                  {polygon[i-1].x,polygon[i-1].y,height},
-                                  {polygon[i].x,polygon[i].y,0}});
-  }*/
 
     for (auto p : partitionPolygonIntoMonotone(polygon))
     {
@@ -67,7 +27,7 @@ void getUserInput(std::vector<Coord> &polygon)
   int numVertices;
   std::cin >> numVertices;
 
-  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the newline from previous input
+  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
 
   std::cout << "Insert a line for each vertex with the format: (x;y)\n";
 
@@ -101,7 +61,6 @@ int main(int argc, char* argv[])
 
     std::vector<Triangle> triangles = getMesh(polygon);
 
-    //for(int i = 0; i < 1000000; i++)
     for (Triangle triangle : triangles)
     {
       std::cout << "[(" <<  triangle.p1.x << ";" << triangle.p1.y  << 
