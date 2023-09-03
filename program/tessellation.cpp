@@ -82,7 +82,7 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
     // Sweep line partitions boundaries
     std::set<Edge> activeEdges;
 
-    // vecotor of all monotone polygons found devided in upper and lower chains
+    // vecotor of all monotone polygons found divided in upper and lower chains
     std::vector<std::pair<std::vector<Coord>,std::vector<Coord>>> monotones;
 
     for (const Coord& event : eventQueue)
@@ -97,14 +97,24 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
         if (type == MERGE) 
         {
             const Edge* e = findUpperBound(event.y,event.x, activeEdges);
+
+            // if the last vertex seen in the upper polygon is a merge-vertex
             if(e->getMergeMonotonePolygonIndex() != -1)
                 monotones[e->getMergeMonotonePolygonIndex()].first.push_back(event);
-            
-            if(e)
-                e->getHelper()->x = event.x; e->getHelper()->y = event.y; e->getHelper()->z = event.z; e->getHelper()->index = event.index; 
-            
+
+            const Edge* e2 = &*activeEdges.find(Edge(event,next));
+
+            // if the last vertex seen in the lower polygon is a merge-vertex
+            if(e2->getMergeMonotonePolygonIndex() != -1)
+            {
+                e->setMergeMonotonePolygonIndex(e2->getMergeMonotonePolygonIndex());
+                monotones[e2->getMonotonePolygonIndex()].first.push_back(event);
+            }
+            else
+                e->setMergeMonotonePolygonIndex(e2->getMonotonePolygonIndex());
+
+            e->setHelper(event);
             monotones[e->getMonotonePolygonIndex()].second.push_back(event);
-            e->setMergeMonotonePolygonIndex(activeEdges.find(Edge(event,next))->getMonotonePolygonIndex());
             monotones[e->getMergeMonotonePolygonIndex()].first.push_back(event);
             activeEdges.erase(Edge(event,next));
         }
@@ -114,22 +124,33 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
             if(e->getMergeMonotonePolygonIndex() == -1)
             {
                 monotones.push_back(std::make_pair(std::vector<Coord>{*e->getHelper()}, std::vector<Coord>{}));
-                activeEdges.insert(Edge(prev,event,event, e->getMonotonePolygonIndex()));
-                monotones[e->getMonotonePolygonIndex()].first.push_back(event);
-                e->setMonotonePolygonIndex(monotones.size()-1);
+                if(*e->getHelper() == e->start) // if the helper is in the upper-chain
+                {
+                    activeEdges.insert(Edge(prev,event,event,e->getMonotonePolygonIndex()));
+                    monotones[e->getMonotonePolygonIndex()].first.push_back(event);
+                    e->setMonotonePolygonIndex( monotones.size()-1);
+                    monotones[ e->getMonotonePolygonIndex()].second.push_back(event);
+                }
+                else                            // if the helper is in the lower-chain
+                {
+                    activeEdges.insert(Edge(prev,event,event,monotones.size()-1));
+                    monotones[e->getMonotonePolygonIndex()].second.push_back(event);
+                    monotones[monotones.size()-1].first.push_back(event);
+                }
             }
-            else
+            else                                // if the helper is a previous merge-vertex
             {
                 activeEdges.insert(Edge(prev,event,event, e->getMergeMonotonePolygonIndex()));
                 monotones[e->getMergeMonotonePolygonIndex()].first.push_back(event);
+                monotones[e->getMonotonePolygonIndex()].second.push_back(event);
             }
-            monotones[e->getMonotonePolygonIndex()].second.push_back(event);
             
+            
+            e->setHelper(event);
             e->setMergeMonotonePolygonIndex(-1);
         }
         else if(type == START) 
         {
-
             monotones.push_back(std::make_pair(std::vector<Coord>{event}, std::vector<Coord>{}));
             activeEdges.insert(Edge(prev,event,event,monotones.size()-1));
         }
@@ -166,6 +187,7 @@ std::vector<std::vector<Coord>> partitionPolygonIntoMonotone(std::vector<Coord>&
                 monotones[e->getMergeMonotonePolygonIndex()].second.push_back(event);
                 e->setMergeMonotonePolygonIndex(-1);
             }
+            e->setHelper(event);
             monotones[e->getMonotonePolygonIndex()].second.push_back(event);
         }
     }
@@ -197,11 +219,11 @@ int DetermineConvexity(const Coord& p1, const Coord& p2, const Coord& p3)
     Coord cross = crossProduct(v1, v2);
     
     if (cross.x > 0 || (cross.x == 0 && (cross.y > 0 || (cross.y == 0 && cross.z > 0))))
-        return 1;   // Concave curve
+        return 1; // Curva concava
     else if (cross.x < 0 || (cross.x == 0 && (cross.y < 0 || (cross.y == 0 && cross.z < 0))))
-        return -1;  // Convex curve
+        return -1; // Curva convessa
     else
-        return 0;   // The points are aligned
+        return 0; // Punti allineati
 }
 
 std::vector<Triangle> triangulateMonotonePolygon(const std::vector<Coord>& polygon) {
@@ -218,6 +240,7 @@ std::vector<Triangle> triangulateMonotonePolygon(const std::vector<Coord>& polyg
     deque.push_front(eventQueue[0]);
     deque.push_front(eventQueue[1]);
 
+    bool isCCW = isCounterClockwise(polygon);
     for (int i = 2; i < poly_len; ++i)
     {
         Coord current = eventQueue[i];
@@ -231,11 +254,17 @@ std::vector<Triangle> triangulateMonotonePolygon(const std::vector<Coord>& polyg
         if(type == lastType)
         {
             deque.pop_front();
-            while ( (( DetermineConvexity(current,last,deque.front()) < 0 && type==REGULAR_LOWER ) || ( DetermineConvexity(current,last,deque.front()) > 0 && type==REGULAR_UPPER )) && deque.size() > 0)
+            int convexity = DetermineConvexity(current,last,deque.front());
+            while ( (( convexity < 0 && next.x < current.x && current.x < prev.x  && isCCW) || 
+                     ( convexity > 0 && next.x > current.x && current.x > prev.x  && isCCW) ||
+                     ( convexity < 0 && next.x > current.x && current.x > prev.x  && !isCCW) || 
+                     ( convexity > 0 && next.x < current.x && current.x < prev.x  && !isCCW)) && 
+                    deque.size() > 0)            
             {
                 triangles.push_back({deque.front(),last,current});
                 last = deque.front();
                 deque.pop_front();
+                convexity = DetermineConvexity(current,last,deque.front());
             }
             deque.push_front(last);
             deque.push_front(current);
@@ -247,8 +276,8 @@ std::vector<Triangle> triangulateMonotonePolygon(const std::vector<Coord>& polyg
             while(deque.size() >= 2)
             {
                 triangles.push_back({tmp,current,deque.back()});
-                tmp = deque.back();          //
-                deque.pop_back();                // no devi prendere da sotto!!!!!!!!
+                tmp = deque.back();          
+                deque.pop_back();                
             }
             triangles.push_back({tmp,current,deque.back()});
             deque.push_front(current);
