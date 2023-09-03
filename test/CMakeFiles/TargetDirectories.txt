@@ -1,5 +1,0 @@
-/home/zan/cgal/test/CMakeFiles/program.dir
-/home/zan/cgal/test/CMakeFiles/ALL_CGAL_TARGETS.dir
-/home/zan/cgal/test/CMakeFiles/cgal_check_build_system.dir
-/home/zan/cgal/test/CMakeFiles/edit_cache.dir
-/home/zan/cgal/test/CMakeFiles/rebuild_cache.dir

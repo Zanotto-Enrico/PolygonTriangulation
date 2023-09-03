@@ -1,1 +1,0 @@
-/sbin/c++ -O3 -DNDEBUG CMakeFiles/program.dir/program.cpp.o -o program  /usr/lib/libgmpxx.so /usr/lib/libmpfr.so /usr/lib/libgmp.so 
